@@ -2,7 +2,7 @@ name: AIBase to Feishu
 
 on:
   schedule:
-    - cron: "0 1 * * *"
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -29,6 +29,7 @@ jobs:
         env:
           FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
           TOP_N: "5"
+          FEISHU_MSG_STYLE: "post"
         run: python push_news.py
 
       - name: Commit state if changed

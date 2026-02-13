@@ -6,7 +6,7 @@
 
 - `push_news.py`: 抓取 + 去重 + 推送逻辑
 - `state.json`: 已推送新闻 ID 去重状态（会被 GitHub Actions 自动更新）
-- `.github/workflows/push.yml`: 定时任务（默认每天 UTC `01:00`）
+- `.github/workflows/push.yml`: 定时任务（默认每小时第 0 分钟）
 - `requirements.txt`: Python 依赖
 
 ## 一次性配置
@@ -20,8 +20,11 @@
 
 ## 定时说明
 
-- 工作流当前配置: `0 1 * * *`（UTC）
-- 如果你要北京时间每天 09:00 运行，`0 1 * * *` 正好对应 UTC+8 的 09:00。
+- 工作流当前配置: `0 * * * *`（UTC，每小时触发一次）
+- 按北京时间（UTC+8）理解，就是每小时整点跑一次。
+- 这个自动触发来自 `.github/workflows/push.yml` 里的 `on.schedule`，不需要你手动点。
+- `workflow_dispatch` 只是保留给你“手动测试”用的入口。
+- 定时任务会跑在仓库默认分支（通常是 `main`）上的 workflow 文件。
 
 ## 可选环境变量
 
@@ -29,3 +32,5 @@
 - `LIST_URL`（默认 `https://news.aibase.com/zh/news`）: 抓取地址
 - `STATE_FILE`（默认 `state.json`）: 状态文件路径
 - `MAX_SEEN_IDS`（默认 `5000`）: 去重集合最大保留数量
+- `FEISHU_MSG_STYLE`（默认 `post`）: `post` 为富文本样式，`text` 为纯文本样式
+- `TITLE_MAX_LEN`（默认 `46`）: 标题最大长度（超长自动截断）

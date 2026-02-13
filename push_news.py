@@ -16,6 +16,8 @@ LIST_URL = os.getenv("LIST_URL", "https://news.aibase.com/zh/news")
 STATE_FILE = Path(os.getenv("STATE_FILE", "state.json"))
 TOP_N = int(os.getenv("TOP_N", "5"))
 MAX_SEEN_IDS = int(os.getenv("MAX_SEEN_IDS", "5000"))
+FEISHU_MSG_STYLE = os.getenv("FEISHU_MSG_STYLE", "post").strip().lower()
+TITLE_MAX_LEN = int(os.getenv("TITLE_MAX_LEN", "46"))
 NEWS_LINK_PATTERN = re.compile(r"^/zh/news/(\d+)$")
 HEADERS = {
     "User-Agent": (
@@ -23,6 +25,17 @@ HEADERS = {
         "+https://github.com/actions)"
     )
 }
+
+
+def normalize_title(raw: str) -> str:
+    title = re.sub(r"\s+", " ", raw).strip()
+    if "。" in title and len(title) > TITLE_MAX_LEN:
+        title = title.split("。", 1)[0].strip()
+    if "，" in title and len(title) > TITLE_MAX_LEN:
+        title = title.split("，", 1)[0].strip()
+    if len(title) > TITLE_MAX_LEN:
+        title = title[: TITLE_MAX_LEN - 1].rstrip() + "…"
+    return title
 
 
 def load_state(path: Path) -> dict:
@@ -61,14 +74,16 @@ def fetch_news() -> list[tuple[int, str, str]]:
             continue
 
         news_id = int(match.group(1))
-        title = a.get_text(" ", strip=True)
+        title = normalize_title(a.get("title") or a.get_text(" ", strip=True))
         if not title:
             continue
         if "AI资讯" in title or "最新资讯" in title:
             continue
 
         url = f"https://news.aibase.com{href}"
-        latest_by_id[news_id] = (title, url)
+        prev = latest_by_id.get(news_id)
+        if prev is None or len(title) < len(prev[0]):
+            latest_by_id[news_id] = (title, url)
 
     items = [(news_id, title, url) for news_id, (title, url) in latest_by_id.items()]
     items.sort(key=lambda x: x[0], reverse=True)
@@ -82,8 +97,35 @@ def build_message(items: list[tuple[int, str, str]]) -> str:
     return "\n".join(lines)
 
 
-def post_to_feishu(webhook: str, text: str) -> None:
-    payload = {"msg_type": "text", "content": {"text": text}}
+def build_post_payload(items: list[tuple[int, str, str]]) -> dict:
+    lines: list[list[dict]] = []
+    for idx, (_, title, url) in enumerate(items, start=1):
+        lines.append(
+            [
+                {"tag": "text", "text": f"{idx}. "},
+                {"tag": "a", "text": title, "href": url},
+            ]
+        )
+    lines.append([{"tag": "text", "text": "来源：news.aibase.com"}])
+    return {
+        "msg_type": "post",
+        "content": {
+            "post": {
+                "zh_cn": {
+                    "title": "AIBase 最新资讯",
+                    "content": lines,
+                }
+            }
+        },
+    }
+
+
+def post_to_feishu(webhook: str, items: list[tuple[int, str, str]]) -> None:
+    if FEISHU_MSG_STYLE == "text":
+        payload = {"msg_type": "text", "content": {"text": build_message(items)}}
+    else:
+        payload = build_post_payload(items)
+
     resp = requests.post(webhook, json=payload, timeout=20)
     resp.raise_for_status()
     try:
@@ -125,10 +167,9 @@ def main() -> int:
         return 0
 
     selected = new_items[:TOP_N]
-    message = build_message(selected)
 
     try:
-        post_to_feishu(webhook, message)
+        post_to_feishu(webhook, selected)
     except Exception as exc:  # pragma: no cover
         print(f"ERROR: failed to post to Feishu: {exc}", file=sys.stderr)
         return 1
