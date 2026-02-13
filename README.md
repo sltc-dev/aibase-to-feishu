@@ -6,7 +6,7 @@
 
 - `push_news.py`: 抓取 + 去重 + 推送逻辑
 - `state.json`: 已推送新闻 ID 去重状态（会被 GitHub Actions 自动更新）
-- `.github/workflows/push.yml`: 定时任务（默认每小时第 7 分钟）
+- `.github/workflows/push.yml`: 定时任务（默认每 15 分钟一次）
 - `requirements.txt`: Python 依赖
 
 ## 一次性配置
@@ -20,8 +20,8 @@
 
 ## 定时说明
 
-- 工作流当前配置: `7 * * * *`（UTC，每小时触发一次）
-- 按北京时间（UTC+8）理解，就是每小时第 7 分钟跑一次。
+- 工作流当前配置: `7,22,37,52 * * * *`（UTC，每 15 分钟触发一次）
+- 按北京时间（UTC+8）理解，就是每小时第 7、22、37、52 分钟各跑一次。
 - 这个自动触发来自 `.github/workflows/push.yml` 里的 `on.schedule`，不需要你手动点。
 - `workflow_dispatch` 只是保留给你“手动测试”用的入口。
 - 定时任务会跑在仓库默认分支（通常是 `main`）上的 workflow 文件。
