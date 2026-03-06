@@ -28,11 +28,16 @@ jobs:
       - name: Run sync script
         env:
           FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
-          TOP_N: "5"
+          FETCH_SOURCE: "api"
+          API_LANG_TYPE: "zh_cn"
+          TOP_N: "0"
+          MAX_PAGES: "3"
+          PUSH_BATCH_SIZE: "10"
           FEISHU_MSG_STYLE: "post"
         run: python push_news.py
 
       - name: Commit state if changed
+        if: ${{ always() }}
         run: |
           if git diff --quiet -- state.json; then
             echo "No state changes."

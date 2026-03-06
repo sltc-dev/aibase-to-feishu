@@ -1,6 +1,6 @@
 # AIBase to Feishu
 
-每天抓取 [AIBase 新闻页](https://news.aibase.com/zh/news) 最新内容，自动推送到飞书群自定义机器人。
+每天通过 AIBase 接口抓取最新内容（默认前 3 页），自动推送到飞书群自定义机器人。
 
 ## 文件说明
 
@@ -28,8 +28,17 @@
 
 ## 可选环境变量
 
-- `TOP_N`（默认 `5`）: 每次最多推送条数
-- `LIST_URL`（默认 `https://news.aibase.com/zh/news`）: 抓取地址
+- `TOP_N`（默认 `5`）: 每次最多推送条数；设为 `0` 表示不限制（发送本轮所有新内容）
+- `FETCH_SOURCE`（默认 `api`）: 抓取源，`api` 或 `html`
+- `API_NEWS_URL`（默认 `https://mcpapi.aibase.cn/api/aiInfo/aiNews`）: AIBase 新闻接口地址
+- `API_LANG_TYPE`（默认 `zh_cn`）: 接口语言参数
+- `API_T_VALUE`（默认空）: 接口参数 `t`，为空时自动使用当前毫秒时间戳
+- `NEWS_URL_PREFIX`（默认 `https://news.aibase.com/zh/news`）: 生成新闻详情链接的前缀
+- `LIST_URL`（默认 `https://news.aibase.com/zh/news`）: HTML 抓取地址（仅 `FETCH_SOURCE=html` 时使用）
+- `MAX_PAGES`（默认 `3`）: 每次抓取前 N 页
+- `PAGE_PARAM`（默认 `page`）: HTML 模式下分页查询参数名（用于拼接 `?page=2`）
+- `LIST_URL_TEMPLATE`（默认空）: HTML 模式下分页 URL 模板，需包含 `{page}`，例如 `https://news.aibase.com/zh/news/{page}`
+- `PUSH_BATCH_SIZE`（默认 `0`）: 每条飞书消息包含的新闻数；`0` 表示单条消息汇总发送
 - `STATE_FILE`（默认 `state.json`）: 状态文件路径
 - `MAX_SEEN_IDS`（默认 `5000`）: 去重集合最大保留数量
 - `FEISHU_MSG_STYLE`（默认 `post`）: `post` 为富文本样式，`text` 为纯文本样式
