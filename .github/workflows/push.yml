@@ -33,6 +33,7 @@ jobs:
           TOP_N: "0"
           MAX_PAGES: "3"
           PUSH_BATCH_SIZE: "10"
+          MAX_SEEN_IDS: "100"
           FEISHU_MSG_STYLE: "post"
         run: python push_news.py
 

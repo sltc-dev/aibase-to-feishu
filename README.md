@@ -40,6 +40,6 @@
 - `LIST_URL_TEMPLATE`（默认空）: HTML 模式下分页 URL 模板，需包含 `{page}`，例如 `https://news.aibase.com/zh/news/{page}`
 - `PUSH_BATCH_SIZE`（默认 `0`）: 每条飞书消息包含的新闻数；`0` 表示单条消息汇总发送
 - `STATE_FILE`（默认 `state.json`）: 状态文件路径
-- `MAX_SEEN_IDS`（默认 `5000`）: 去重集合最大保留数量
+- `MAX_SEEN_IDS`（默认 `100`）: 去重集合最大保留数量
 - `FEISHU_MSG_STYLE`（默认 `post`）: `post` 为富文本样式，`text` 为纯文本样式
 - `TITLE_MAX_LEN`（默认 `46`）: 标题最大长度（超长自动截断）
